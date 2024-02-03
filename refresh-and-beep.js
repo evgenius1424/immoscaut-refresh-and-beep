@@ -9,28 +9,19 @@ function checkForNewIDs() {
 
     if (newIDs.length > 0) {
         console.log("New IDs found. Playing a beep sound...");
-
         playBeep(200);
-
         storedIDs.push(...newIDs);
-
         localStorage.setItem("storedIDs", JSON.stringify(storedIDs));
     } else {
         console.log("No new IDs found.");
     }
 }
 
-/**
- * @param {number} duration
- */
 function playBeep(duration) {
     console.log("Playing beep sound...");
 
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioContext = new AudioContext();
-
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
-
     oscillator.connect(audioContext.destination);
 
     oscillator.start();
@@ -38,19 +29,14 @@ function playBeep(duration) {
     setTimeout(() => {
         console.log("Beep sound stopped.");
         oscillator.stop();
-        }, duration);
+    }, duration);
 }
 
-/**
- * @param {number} minDelaySeconds
- * @param {number} maxDelaySeconds
- */
 function refreshPageRandomly(minDelaySeconds, maxDelaySeconds) {
     const minDelay = minDelaySeconds * 1000;
     const maxDelay = maxDelaySeconds * 1000;
 
     const refreshDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
-
     const nextFireTime = new Date(Date.now() + refreshDelay).toLocaleTimeString();
 
     console.log("Refreshing the page randomly...");
@@ -59,7 +45,7 @@ function refreshPageRandomly(minDelaySeconds, maxDelaySeconds) {
     setTimeout(() => {
         console.log("Reloading the page...");
         location.reload();
-        }, refreshDelay);
+    }, refreshDelay);
 }
 
 setTimeout(() => {
