@@ -1,4 +1,4 @@
-function checkForNewIDs() {
+async function checkForNewIDs() {
     console.log("Running checkForNewIDs...");
 
     const idsOnPage = [...document.querySelectorAll(".result-list__listing")].map(e => e.getAttribute("data-id"));
@@ -9,7 +9,7 @@ function checkForNewIDs() {
 
     if (newIDs.length > 0) {
         console.log("New IDs found. Playing a beep sound...");
-        playBeep(200);
+        await playBeep(200);
         storedIDs.push(...newIDs);
         localStorage.setItem("storedIDs", JSON.stringify(storedIDs));
     } else {
@@ -17,22 +17,23 @@ function checkForNewIDs() {
     }
 }
 
-function playBeep(duration) {
+async function playBeep(duration) {
     console.log("Playing beep sound...");
+    return new Promise((resolve, reject) => {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        oscillator.connect(audioContext.destination);
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    oscillator.connect(audioContext.destination);
+        oscillator.start();
 
-    oscillator.start();
-
-    setTimeout(() => {
-        console.log("Beep sound stopped.");
-        oscillator.stop();
-    }, duration);
+        setTimeout(() => {
+            console.log("Beep sound stopped.");
+            oscillator.stop();
+            resolve();
+        }, duration);
+    });
 }
-
-function refreshPageRandomly(minDelaySeconds, maxDelaySeconds) {
+async function refreshPageRandomly(minDelaySeconds, maxDelaySeconds) {
     const minDelay = minDelaySeconds * 1000;
     const maxDelay = maxDelaySeconds * 1000;
 
@@ -42,19 +43,22 @@ function refreshPageRandomly(minDelaySeconds, maxDelaySeconds) {
     console.log("Refreshing the page randomly...");
     console.log(`Next refresh will occur at: ${nextFireTime}`);
 
-    setTimeout(() => {
-        console.log("Reloading the page...");
-        location.reload();
-    }, refreshDelay);
+    await new Promise(resolve => setTimeout(resolve, refreshDelay));
+    console.log("Reloading the page...");
+    location.reload();
 }
 
-setTimeout(() => {
+async function main() {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
     if (document.title.startsWith("Wohnung mieten")) {
         console.log("Checking IDs after the page is loaded...");
-        checkForNewIDs();
-        refreshPageRandomly(60, 180);
+        await checkForNewIDs();
+        await refreshPageRandomly(60, 180);
     } else if (document.title === 'Ich bin kein Roboter - ImmobilienScout24') {
         console.log("Captcha page displayed. Playing a long beep sound...");
-        playBeep(600);
+        await playBeep(600);
     }
-}, 5000);
+}
+
+main();
